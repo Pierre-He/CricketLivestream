@@ -75,3 +75,24 @@ if (searched_match > 0):
     if st.button("Next ball"):
     
         st.write("New ball!")
+
+
+
+        # Spark Data Cleaning : 
+# Check for missing values in the datasets
+# Check if no duplicates rows in the datasets
+# Check for correct data typing in the datasets
+# Check for consistency in namming (no variations)
+
+
+# Spark Data Aggregation (useful for dashboard):
+# Total Runs by each team
+# Total Wins by each team
+# Average runs per match by each team per match
+# Win / Loss ratio for each team 
+
+# Total Runs by Batsman
+# Total Wikcets per bowlers
+# Strike rate for 100 ball by each batsman #
+
+#Total Match 
