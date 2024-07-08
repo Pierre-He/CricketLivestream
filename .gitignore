@@ -6,3 +6,4 @@ db/
 
 .venv/
 requirements.txt
+db/
