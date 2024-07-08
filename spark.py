@@ -1,24 +1,24 @@
 import pandas as pd
 import sqlite3
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, when, min, max
-
-# Load CSV files into pandas DataFrames
-deliveries = pd.read_csv('consumed_deliveries.csv')
-matches = pd.read_csv('consumed_matches.csv')
-
-# Save DataFrames to SQLite database
-connect_db = sqlite3.connect('cricket_data.db')
-deliveries.to_sql('deliveries', connect_db, if_exists='replace', index=False)
-matches.to_sql('matches', connect_db, if_exists='replace', index=False)
-connect_db.commit()
+from pyspark.sql.functions import col, when, lit, min, max
+from pymongo import MongoClient
 
 # Create a Spark session
-spark = SparkSession.builder.appName("Cricket Data Analysis").getOrCreate()
+spark = SparkSession.builder.appName("Cricket Data Analysis and MongoDBBridge").getOrCreate()
 
 # Load CSV files into Spark DataFrames
 deliveries_df = spark.read.csv('deliveries.csv', header=True, inferSchema=True, nullValue='nan')
 matches_df = spark.read.csv('matches.csv', header=True, inferSchema=True, nullValue='nan')
+
+# Replace nulls with 'Unknown' and handle venue-city logic
+matches_df = matches_df.withColumn('umpire1', when(col('umpire1').isNull(), lit("Unknown")).otherwise(col('umpire1')))
+matches_df = matches_df.withColumn('umpire2', when(col('umpire2').isNull(), lit("Unknown")).otherwise(col('umpire2')))
+matches_df = matches_df.withColumn('winner', when(col('winner').isNull(), lit("Unknown")).otherwise(col('winner')))
+matches_df = matches_df.withColumn('player_of_match', when(col('player_of_match').isNull(), lit("Unknown")).otherwise(col('player_of_match')))
+matches_df = matches_df.withColumn('city', when(matches_df['venue'] == 'Dubai International Cricket Stadium', 'Dubai').otherwise(matches_df['city']))
+matches_df = matches_df.drop('umpire3')
+deliveries_df = deliveries_df.drop('player_dismissed').drop('dismissal_kind').drop('fielder')
 
 # Function to count NULL values in each column of a DataFrame
 def count_nulls(df):
@@ -44,24 +44,41 @@ print("\nResults for 'matches.csv':")
 for column, count in matches_null_counts.items():
     print(f"Column '{column}': {count} NULL")
 
-# Drop columns with too many NULL values
-matches_df = matches_df.drop('umpire3')
-deliveries_df = deliveries_df.drop('player_dismissal').drop('dismissal_kind').drop('fielder')
+# Convert date columns to string
+def convert_date_to_string(df):
+    for column in df.columns:
+        if "date" in column.lower():
+            df = df.withColumn(column, col(column).cast("string"))
+    return df
 
-# Print updated schema for verification
-print("Schema of deliveries_df after dropping columns:")
-deliveries_df.printSchema()
+matches_df = convert_date_to_string(matches_df)
+deliveries_df = convert_date_to_string(deliveries_df)
 
-print("\nSchema of matches_df after dropping 'umpire3':")
-matches_df.printSchema()
+# Convert Spark DataFrames to Pandas DataFrames
+deliveries_pd = deliveries_df.toPandas()
+matches_pd = matches_df.toPandas()
+
+# Convert Pandas DataFrames to list of dictionaries
+deliveries_dict = deliveries_pd.to_dict("records")
+matches_dict = matches_pd.to_dict("records")
+
+# Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client.cricketDatabase
+
+# Insert data into MongoDB collections
+db.deliveries.insert_many(deliveries_dict)
+db.matches.insert_many(matches_dict)
+
+print("Deliveries Collection Sample:")
+print(db.deliveries.find_one())
+print("\nMatches Collection Sample:")
+print(db.matches.find_one())
 
 # Filter and display venues where city is NULL
 venues_with_null_city = matches_df.filter(matches_df['city'].isNull()).select('venue')
 print("Venues when city is null:")
 venues_with_null_city.show(truncate=False)
-
-# Update city where venue is 'Dubai International Cricket Stadium'
-matches_df = matches_df.withColumn('city', when(matches_df['venue'] == 'Dubai International Cricket Stadium', 'Dubai').otherwise(matches_df['city']))
 
 # Columns to check for min and max in matches
 matches_columns_to_check = ["season", "dl_applied", "win_by_runs", "win_by_wickets"]
