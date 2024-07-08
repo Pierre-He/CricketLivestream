@@ -4,3 +4,6 @@
 
 #temporary files
 *.tmp
+
+.venv/
+requirements.txt
