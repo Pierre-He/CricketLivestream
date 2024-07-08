@@ -68,6 +68,7 @@ top_scorers = get_top_scorers()
 top_scorers_df = pd.DataFrame(top_scorers)
 top_scorers_df['season'] = top_scorers_df["_id"]
 top_scorers_df.drop(columns=["_id"], inplace=True)
+st.dataframe(top_scorers_df)
 st.bar_chart(top_scorers_df.set_index("topScorer")["runs"])
 
 st.subheader("Top bowler")
