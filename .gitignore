@@ -1,7 +1,6 @@
 #ignore
 *.log
-
-
+db/
 #temporary files
 *.tmp
 
