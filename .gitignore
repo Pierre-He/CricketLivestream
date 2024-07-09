@@ -3,7 +3,7 @@
 db/
 #temporary files
 *.tmp
+__pycache__
 
 .venv/
-requirements.txt
 db/
