@@ -1,5 +1,4 @@
 import pandas as pd
-import sqlite3
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, when, lit, min, max
 from pymongo import MongoClient
