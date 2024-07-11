@@ -1,9 +1,10 @@
 <h1 align="center"> Cricket Livestream </h1>
 
 <p align="center">
-  Project presentation
+  This project simulates live-streaming of cricket matches using Kafka, cleans the data using Spark, stores it into MongoDB, and displays in on a Streamlit dashboard.
 
-![image](url)
+![image](https://github.com/Pierre-He/CricketLivestream/assets/71611172/3c56d04b-8343-44ed-9e28-353e981b6384)
+
 
 </p>
 
@@ -13,18 +14,18 @@
 - **Data streaming**: Kafka
 - **Database**: MongoDB
 - **Data cleaning**: Spark
-- **Python librairies**: PyMongo, Pandas, Matplotlib
+- **Python libraries**: PyMongo, Pandas, Matplotlib
 
-## Prerequisite
+## Prerequisites
 
 - Kafka
 - MongoDB
-- Python
+- Python (up to 3.11.4)
 - pip (python)
 
 ## Getting Started
 
-1. Start kafka
+1. Start Kafka
 
 ```sh
 cd Path\to\kafka\directory
@@ -36,13 +37,13 @@ cd Path\to\kafka\directory
 .\bin\windows\kafka-server-start.bat .\config\server.properties
 ```
 
-2. Topics creation
+2. Create Kafka topics
 
 ```sh
 # matches topic creation
 .\bin\windows\kafka-topics.bat --create --topic matches --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
 
-# matches topic creation
+# deliveries topic creation
 .\bin\windows\kafka-topics.bat --create --topic deliveries --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
 ```
 
@@ -65,6 +66,7 @@ cd CricketLivestream
 ```
 
 5. Create a virtual environment
+
 \*_Make sure to have Python and `pip` installed on your machine._
 
 ```sh
@@ -78,12 +80,12 @@ python -m venv .venv
 .venv\Scripts\activate # Windows
 source .venv/Scripts/activate # Linux/macOS
 
-# install required back-end dependencies
+# install required dependencies
 pip install -r requirements.txt
-
 ```
 
 7. Run the pipeline
+
 ```sh
 # run producer
 python .\producer.py
@@ -98,10 +100,10 @@ python .\spark.py
 streamlit run .\cricket-app.py
 
 ```
+
 ## Members
 
 - Asma ABIDI
 - Laurent HAN
 - Pierre HE
 - Alexandra WONYU
-
