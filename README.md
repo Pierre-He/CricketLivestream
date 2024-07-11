@@ -88,7 +88,7 @@ pip install -r requirements.txt
 # run producer
 python .\producer.py
 
-# run consumer
+# run consumer (can ctrl + c after a few second to stop the consumer from listening)
 python .\consumer.py
 
 # run spark cleaning script
