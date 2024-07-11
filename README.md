@@ -60,8 +60,8 @@ mongod --dbpath "Path\to\store\mongodb\database"
 4. Clone this repository
 
 ```sh
-git clone https://github.com/Pierre-He/DatabaseProject-i2.git
-cd DatabaseProject-i2
+git clone https://github.com/Pierre-He/CricketLivestream.git
+cd CricketLivestream
 ```
 
 5. Create a virtual environment
