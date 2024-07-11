@@ -17,8 +17,10 @@
 
 ## Prerequisite
 
-- Kafka installed
-- MongoDB installed
+- Kafka
+- MongoDB
+- Python
+- pip (python)
 
 ## Getting Started
 
