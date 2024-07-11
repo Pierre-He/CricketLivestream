@@ -14,24 +14,8 @@ deliveries_df = spark.read.csv(
 matches_df = spark.read.csv(
     'matches.csv', header=True, inferSchema=True, nullValue='nan')
 
-# Replace nulls with 'Unknown' and handle venue-city logic
-matches_df = matches_df.withColumn('umpire1', when(
-    col('umpire1').isNull(), lit("Unknown")).otherwise(col('umpire1')))
-matches_df = matches_df.withColumn('umpire2', when(
-    col('umpire2').isNull(), lit("Unknown")).otherwise(col('umpire2')))
-matches_df = matches_df.withColumn('winner', when(
-    col('winner').isNull(), lit("Unknown")).otherwise(col('winner')))
-matches_df = matches_df.withColumn('player_of_match', when(col(
-    'player_of_match').isNull(), lit("Unknown")).otherwise(col('player_of_match')))
-matches_df = matches_df.withColumn('city', when(
-    matches_df['venue'] == 'Dubai International Cricket Stadium', 'Dubai').otherwise(matches_df['city']))
-matches_df = matches_df.drop('umpire3')
-deliveries_df = deliveries_df.drop('player_dismissed').drop(
-    'dismissal_kind').drop('fielder')
 
 # Function to count NULL values in each column of a DataFrame
-
-
 def count_nulls(df):
     null_counts = {}
     for column in df.columns:
@@ -56,9 +40,59 @@ print("\nResults for 'matches.csv':")
 for column, count in matches_null_counts.items():
     print(f"Column '{column}': {count} NULL")
 
+
+#Drop columns that we can not use for analysis
+matches_df = matches_df.drop('umpire3')
+deliveries_df = deliveries_df.drop('player_dismissed').drop('dismissal_kind').drop('fielder')
+
+# Replace nulls with 'Unknown'
+matches_df = matches_df.withColumn('umpire1', when(
+    col('umpire1').isNull(), lit("Unknown")).otherwise(col('umpire1')))
+matches_df = matches_df.withColumn('umpire2', when(
+    col('umpire2').isNull(), lit("Unknown")).otherwise(col('umpire2')))
+matches_df = matches_df.withColumn('winner', when(
+    col('winner').isNull(), lit("Unknown")).otherwise(col('winner')))
+matches_df = matches_df.withColumn('player_of_match', when(col(
+    'player_of_match').isNull(), lit("Unknown")).otherwise(col('player_of_match')))
+
+# Filter and display venues where city is NULL
+venues_with_null_city = matches_df.filter(
+    matches_df['city'].isNull()).select('venue')
+print("Venues when city is null:")
+venues_with_null_city.show(truncate=False)
+
+#Replace NULL city values with correct city names
+matches_df = matches_df.withColumn('city', when(
+    matches_df['venue'] == 'Dubai International Cricket Stadium', 'Dubai').otherwise(matches_df['city']))
+
+
+# Columns to check for min and max in matches
+matches_columns_to_check = [
+    "season", "dl_applied", "win_by_runs", "win_by_wickets"]
+matches_min = matches_df.select(
+    [min(col).alias(f"min_{col}") for col in matches_columns_to_check])
+matches_max = matches_df.select(
+    [max(col).alias(f"max_{col}") for col in matches_columns_to_check])
+
+# Show min and max results for matches
+matches_min.show(truncate=False)
+matches_max.show(truncate=False)
+
+# Columns to check for min and max in deliveries
+deliveries_columns_to_check = ["match_id", "inning", "over", "ball", "is_super_over", "wide_runs", "bye_runs",
+                               "legbye_runs", "noball_runs", "penalty_runs", "batsman_runs", "extra_runs", "total_runs"]
+deliveries_min = deliveries_df.select(
+    [min(col).alias(f"min_{col}") for col in deliveries_columns_to_check])
+deliveries_max = deliveries_df.select(
+    [max(col).alias(f"max_{col}") for col in deliveries_columns_to_check])
+
+# Show min and max results for deliveries
+deliveries_min.show(truncate=False)
+deliveries_max.show(truncate=False)
+
+
+
 # Convert date columns to string
-
-
 def convert_date_to_string(df):
     for column in df.columns:
         if "date" in column.lower():
@@ -93,36 +127,6 @@ print(db.matches.find_one())
 # Add indexes to MongoDB collections
 db.deliveries.create_index([("match_id"), ("batsman")])
 db.matches.create_index([("id"), ("season")])
-
-# Filter and display venues where city is NULL
-venues_with_null_city = matches_df.filter(
-    matches_df['city'].isNull()).select('venue')
-print("Venues when city is null:")
-venues_with_null_city.show(truncate=False)
-
-# Columns to check for min and max in matches
-matches_columns_to_check = [
-    "season", "dl_applied", "win_by_runs", "win_by_wickets"]
-matches_min = matches_df.select(
-    [min(col).alias(f"min_{col}") for col in matches_columns_to_check])
-matches_max = matches_df.select(
-    [max(col).alias(f"max_{col}") for col in matches_columns_to_check])
-
-# Show min and max results for matches
-matches_min.show(truncate=False)
-matches_max.show(truncate=False)
-
-# Columns to check for min and max in deliveries
-deliveries_columns_to_check = ["match_id", "inning", "over", "ball", "is_super_over", "wide_runs", "bye_runs",
-                               "legbye_runs", "noball_runs", "penalty_runs", "batsman_runs", "extra_runs", "total_runs"]
-deliveries_min = deliveries_df.select(
-    [min(col).alias(f"min_{col}") for col in deliveries_columns_to_check])
-deliveries_max = deliveries_df.select(
-    [max(col).alias(f"max_{col}") for col in deliveries_columns_to_check])
-
-# Show min and max results for deliveries
-deliveries_min.show(truncate=False)
-deliveries_max.show(truncate=False)
 
 # Stop the Spark session
 spark.stop()
