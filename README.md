@@ -3,7 +3,8 @@
 <p align="center">
   This project simulates live-streaming of cricket matches using Kafka, cleans the data using Spark, stores it into MongoDB, and displays in on a Streamlit dashboard.
 
-![image](url)
+![image](https://github.com/Pierre-He/CricketLivestream/assets/71611172/3c56d04b-8343-44ed-9e28-353e981b6384)
+
 
 </p>
 
