@@ -24,7 +24,7 @@
 
 ## Getting Started
 
-1. Start zookeeper in your kafka directory
+1. Start kafka
 
 ```sh
 cd Path\to\kafka\directory
