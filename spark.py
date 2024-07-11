@@ -10,9 +10,9 @@ spark = SparkSession.builder.appName(
 
 # Load CSV files into Spark DataFrames
 deliveries_df = spark.read.csv(
-    'deliveries.csv', header=True, inferSchema=True, nullValue='nan')
+    'consumed_deliveries.csv', header=True, inferSchema=True, nullValue='nan')
 matches_df = spark.read.csv(
-    'matches.csv', header=True, inferSchema=True, nullValue='nan')
+    'consumed_matches.csv', header=True, inferSchema=True, nullValue='nan')
 
 
 # Function to count NULL values in each column of a DataFrame
